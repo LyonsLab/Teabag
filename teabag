@@ -79,33 +79,56 @@ function GreenteaStatus {
     fi
 }
 
-function Usage {
-    printf "Usage: teabag <command>\n\n"
+function Commands {
     printf "Available Commands:\n"
     echo -e "$AVAILABLE_COMMANDS"
+}
+
+function Usage {
+    echo "Usage: teabag <command>"
+    Commands
+    Processes
+}
+
+function Processes {
+    printf "Available Processes:\n"
+    echo -e "$AVAILABLE_PROCESSES"
 }
 
 function Help {
     if [ $NUM_ARGS -lt 2 ]
     then
-        echo "Usage: teabag help <command>\n"
+        echo "Help usage: teabag help <command>"
     else
-        printf "#-----------------------------------\n"
-        printf "#       Helping With: <%s> \n" "${ARGS[1]}"
-        printf "#-----------------------------------\n"
         if [ ${ARGS[1]} == "status" ]
         then
-            printf "Returns the status of the currently running processes.\n"
+            echo "usage: teabag status"
+            printf "\t> Returns the status of the currently running processes.\n"
         elif [ ${ARGS[1]} == "help" ]
         then
-            printf "Provides a terse description about passable commands.\n"
+            echo "usage: teabag help <command>"
+            printf "\t> Provides a terse description about passable commands.\n"
         elif [ ${ARGS[1]} == "kill" ]
         then
-            printf "Kills the currently running processes.\n"
-        elif [ ${ARGS[1]} == "infuse" ] || [ ${ARGS[1]} == "start" ]
+            echo "usage: teabag kill"
+            printf "\t> Kills all currently running processes.\n"
+            echo "usage: teabag kill <process>"
+            printf "\t> Kills the specified running processes.\n"
+        elif [ ${ARGS[1]} == "infuse" ]
         then
-            printf "Starts the teabag process. Equivalently pass no commands"
-            printf "for the same effect.\n"
+            echo "usage: teabag"
+            echo "usage: teabag infuse"
+            printf "\t> Starts all configured processes.\n"
+            echo "usage: teabag infuse <process>"
+            printf "\t> Starts the specified teabag process.\n"
+        elif [ ${ARGS[1]} == "processes" ]
+        then
+            echo "usage: teabag processes"
+            printf "\t> Lists all configured processes.\n"
+        elif [ ${ARGS[1]} == "usage" ]
+        then
+            echo "usage: teabag commands"
+            printf "\t> Lists all usable commands.\n"
         else
             echo "${ARGS[1]}" "is not a valid command!"
             echo -e "Did you Mean:\n" "$AVAILABLE_COMMANDS"
@@ -114,12 +137,19 @@ function Help {
 }
 
 ##################################
-#          Main Method           #
+#        Global Variables        #
 ##################################
 
 NUM_ARGS=("$#")
 ARGS=("$@")
-AVAILABLE_COMMANDS="\tstatus\n\tkill\n\tstart\n\tinfuse\n\thelp"
+# TODO: Turn into arrays and parse them out within their appropriate functions
+AVAILABLE_COMMANDS="\tstatus\n \tkill\n \tusage\n \tinfuse\n \tprocesses\n \thelp"
+AVAILABLE_PROCESSES="\tgreentea"
+
+##################################
+#          Main Method           #
+##################################
+
 if [ $# != 0 ]
 then
     if [ "$1" == "status" ]
@@ -128,12 +158,18 @@ then
     elif [ "$1" == "kill" ]
     then
         GreenteaKiller
-    elif [ "$1" == "infuse" ] || [ "$1" == "start" ]
+    elif [ "$1" == "infuse" ]
     then
         GreenteaRunner
     elif [ "$1" == "help" ]
     then
         Help
+    elif [ "$1" == "processes" ]
+    then
+        Processes
+    elif [ "$1" == "commands" ]
+    then
+        Commands
     else
         Usage
     fi

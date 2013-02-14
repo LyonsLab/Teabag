@@ -18,8 +18,6 @@ To __start__ up all the currently configured processes:
 To __start specific__ processes:
 
 * `teabag infuse <process>`
-* `teabag start <process>`
-
 
 To __check__ which __processes__ Teabag is currently configured for:
 
