@@ -39,6 +39,10 @@ To list all usable __commands__:
 
 * `teabag usage`
 
+To restart the __apache__ server alone:
+
+* `teabag apache`
+
 For __help__ with any commands:
 
 * `teabag help <command>`

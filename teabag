@@ -38,7 +38,7 @@ function GreenteaRunner {
 
     cd - &> /dev/null
 
-    printf "|-\-\-\-\-> Restarting Apache %-37s"
+    printf "|-\-\-\-\-> restarting apache %-37s"
     sudo service apache2 restart &> /dev/null
     printf "[ OK ]\n"
 
@@ -95,6 +95,10 @@ function Processes {
     echo -e "$AVAILABLE_PROCESSES"
 }
 
+function TeabagApache {
+    sudo service apache2 restart
+}
+
 function Help {
     if [ $NUM_ARGS -lt 2 ]
     then
@@ -121,6 +125,10 @@ function Help {
             printf "\t> Starts all configured processes.\n"
             echo "usage: teabag infuse <process>"
             printf "\t> Starts the specified teabag process.\n"
+        elif [ ${ARGS[1]} == "apache" ]
+        then
+            echo "usage: teabag apache"
+            printf "\t> Restarts the apache server.\n"
         elif [ ${ARGS[1]} == "processes" ]
         then
             echo "usage: teabag processes"
@@ -143,7 +151,7 @@ function Help {
 NUM_ARGS=("$#")
 ARGS=("$@")
 # TODO: Turn into arrays and parse them out within their appropriate functions
-AVAILABLE_COMMANDS="\tstatus\n \tkill\n \tusage\n \tinfuse\n \tprocesses\n \thelp"
+AVAILABLE_COMMANDS="\tstatus\n \tapache\n \tkill\n \tusage\n \tinfuse\n \tprocesses\n \thelp"
 AVAILABLE_PROCESSES="\tgreentea"
 
 ##################################
@@ -170,6 +178,9 @@ then
     elif [ "$1" == "commands" ]
     then
         Commands
+    elif [ "$1" == "apache" ]
+    then
+        TeabagApache
     else
         Usage
     fi
