@@ -1,0 +1,142 @@
+#!/bin/bash
+###########################################
+#                                         #
+#         ______)                         #
+#        (, /         /)                  #
+#          /  _  _   (/_ _   _            #
+#       ) / _(/_(_(_/_) (_(_(_/_          #
+#      (_/                 .-/            #
+#                         (_/             #
+#                                         #
+#                    CoGe's Utility Belt  #
+#                                         #
+###########################################
+
+
+##################################
+#    Configuration Settings      #
+##################################
+
+CONF_DIR='/opt/apache2/coge/coge.conf'
+PROJECT_DIR='/home/rchasman/git/Greentea/'
+LOG_FILE='/home/rchasman/error.log'
+FONT='invita'
+
+##################################
+#      Function Definitions      #
+##################################
+
+function GreenteaRunner {
+    printf "|-\-\-\-\-> Changing Into %s %-12s" "$PROJECT_DIR"
+    cd "$PROJECT_DIR"
+    printf "[ OK ]\n"
+
+    printf "|-\-\-\-\-> Restarting Greentea %-35s"
+    pkill -f "lein"
+    lein run &> "$LOG_FILE" &
+    printf "[ OK ]\n"
+
+    cd - &> /dev/null
+
+    printf "|-\-\-\-\-> Restarting Apache %-37s"
+    sudo service apache2 restart &> /dev/null
+    printf "[ OK ]\n"
+
+    printf "|-\-\-\-\-> Done! %-49s"
+    printf "[ OK ]\n"
+
+    if [ "$(pgrep -f "lein")" ]
+    then
+        echo -e "\n`echo "Greentea" | figlet -f invita` Infused and Ready\n"
+    else
+        figlet -f "$FONT" "Something went wrong :(" | cowsay -n -e "XX" -T "U"
+    fi
+}
+
+function GreenteaKiller {
+    if [ "$(pgrep -f lein)" ]
+    then
+        printf "|-\-\-\-\-> Killing Greentea %-45s"
+        pkill -f "lein"
+        if [ "$(pgrep -f lein)" ]
+        then
+            printf "[ OK ]\n"
+        else
+            printf "[ FAILED ]\n"
+        fi
+    else
+        echo -e "$STR" `echo "[NOT Running] "` "\n" | cowsay -n -e "><"
+    fi
+}
+
+function GreenteaStatus {
+    STR="\n`figlet -f "$FONT" "Greentea is:"`\n\n\t\t\t\t\t"
+    if [ "$(pgrep -f lein)" ]
+    then
+        echo -e "$STR" `echo "[Running] "` "\n" | cowsay -n -e "^^" -T "U"
+    else
+        echo -e "$STR" `echo "[NOT Running] "` "\n" | cowsay -n -e "><"
+    fi
+}
+
+function Usage {
+    printf "Usage: teabag <command>\n\n"
+    printf "Available Commands:\n"
+    echo -e "$AVAILABLE_COMMANDS"
+}
+
+function Help {
+    if [ $NUM_ARGS -lt 2 ]
+    then
+        echo "Usage: teabag help <command>\n"
+    else
+        printf "#-----------------------------------\n"
+        printf "#       Helping With: <%s> \n" "${ARGS[1]}"
+        printf "#-----------------------------------\n"
+        if [ ${ARGS[1]} == "status" ]
+        then
+            printf "Returns the status of the currently running processes.\n"
+        elif [ ${ARGS[1]} == "help" ]
+        then
+            printf "Provides a terse description about passable commands.\n"
+        elif [ ${ARGS[1]} == "kill" ]
+        then
+            printf "Kills the currently running processes.\n"
+        elif [ ${ARGS[1]} == "infuse" ] || [ ${ARGS[1]} == "start" ]
+        then
+            printf "Starts the teabag process. Equivalently pass no commands"
+            printf "for the same effect.\n"
+        else
+            echo "${ARGS[1]}" "is not a valid command!"
+            echo -e "Did you Mean:\n" "$AVAILABLE_COMMANDS"
+        fi
+    fi
+}
+
+##################################
+#          Main Method           #
+##################################
+
+NUM_ARGS=("$#")
+ARGS=("$@")
+AVAILABLE_COMMANDS="\tstatus\n\tkill\n\tstart\n\tinfuse\n\thelp"
+if [ $# != 0 ]
+then
+    if [ "$1" == "status" ]
+    then
+        GreenteaStatus
+    elif [ "$1" == "kill" ]
+    then
+        GreenteaKiller
+    elif [ "$1" == "infuse" ] || [ "$1" == "start" ]
+    then
+        GreenteaRunner
+    elif [ "$1" == "help" ]
+    then
+        Help
+    else
+        Usage
+    fi
+else
+    GreenteaRunner
+fi
