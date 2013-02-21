@@ -47,9 +47,19 @@ function GreenteaRunner {
         cd "$PROJECT_DIR"
         printf "[ ${green}OK${normal} ]\n"
 
-        printf "|-\-\-\-\-> Restarting Greentea %-25s"
-        lein run &> "$LOG_FILE" &
-        printf "[ ${green}OK${normal} ]\n"
+        if [ "${ARGS[1]}" == "-p" ]
+        then
+            printf "|-\-\-\-\-> Pulling changes from Git %-20s"
+            sudo git pull &> /dev/null
+            printf "[ ${green}OK${normal} ]\n"
+            printf "|-\-\-\-\-> Starting Greentea %-27s"
+            sudo lein run &> "$LOG_FILE" &
+            printf "[ ${green}OK${normal} ]\n"
+        else
+            printf "|-\-\-\-\-> Starting Greentea %-27s"
+            lein run &> "$LOG_FILE" &
+            printf "[ ${green}OK${normal} ]\n"
+        fi
 
         # Change back into previous directory
         cd - &> /dev/null
@@ -73,9 +83,9 @@ function GreenteaRunner {
 }
 
 function GreenteaKiller {
+    printf "|-\-\-\-\-> Killing Greentea %-28s"
     if [ "$(pgrep -f lein)" ]
     then
-        printf "|-\-\-\-\-> Killing Greentea %-45s"
         sudo pkill -f "lein"
         if [ "$(pgrep -f lein)" ]
         then
@@ -84,7 +94,7 @@ function GreenteaKiller {
             printf "[ ${red}FAILED${normal} ]\n"
         fi
     else
-        echo -e "$STR" `echo -e "[ ${red}$LOGO NOT Running${normal} ]"`
+        printf "[ ${red}NOT Running${normal} ]\n"
     fi
 }
 
@@ -99,6 +109,11 @@ function GreenteaStatus {
     else
         echo -e "$STR" `echo -e "[ ${red}NOT Running${normal} ]"` "$STR2"
     fi
+}
+
+function GreenteaRestart {
+    GreenteaKiller
+    GreenteaRunner
 }
 
 function Commands {
@@ -173,7 +188,7 @@ function Help {
 NUM_ARGS=("$#")
 ARGS=("$@")
 # TODO: Turn into arrays and parse them out within their appropriate functions
-AVAILABLE_COMMANDS="\tstatus\n \tapache\n \tkill\n \tusage\n \tinfuse\n \tprocesses\n \thelp\n start\n \tstop\n"
+AVAILABLE_COMMANDS="\tstatus\n \tapache\n \tkill\n \tusage\n \tinfuse\n \tprocesses\n \thelp\n start\n \tstop\n \trestart\n"
 AVAILABLE_PROCESSES="\tgreentea"
 
 ##################################
@@ -182,15 +197,18 @@ AVAILABLE_PROCESSES="\tgreentea"
 
 if [ $# != 0 ]
 then
-    if [ "$1" == "status" ]
+    if [ "$1" == "status" ] || [ "$1" == "-s" ]
     then
         GreenteaStatus
-    elif [ "$1" == "kill" ] || [ "$1" == "stop" ]
+    elif [ "$1" == "kill" ] || [ "$1" == "-k" ] || [ "$1" == "stop" ]
     then
         GreenteaKiller
     elif [ "$1" == "infuse" ] || [ "$1" == "start" ]
     then
         GreenteaRunner
+    elif [ "$1" == "restart" ] || [ "$1" == "-r" ]
+    then
+        GreenteaRestart
     elif [ "$1" == "help" ] || [ "$1" == "-h" ]
     then
         Help
