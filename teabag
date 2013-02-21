@@ -16,6 +16,7 @@
 #################################
 #       Bash Color Codes        #
 #################################
+
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 strong=$(tput bold)
@@ -27,38 +28,43 @@ underline=$(tput smul)
 ##################################
 
 CONF_DIR='/opt/apache2/coge/coge.conf'
-PROJECT_DIR='~/git/Greentea/'
-LOG_FILE='~/.teabag/error.log'
+PROJECT_DIR='/opt/apache2/Greentea/'
+LOG_FILE='/opt/apache2/Greentea/logs/error.log'
+URL='geco.iplantc.org/analytics'
 FONT='invita'
+LOGO="${green}\n`echo "Greentea" | figlet -f invita`${normal}"
 
 ##################################
 #      Function Definitions      #
 ##################################
 
 function GreenteaRunner {
-    printf "|-\-\-\-\-> Changing Into %s %-12s" "$PROJECT_DIR"
+
+    # Change into leiningen directory
+    printf "|-\-\-\-\-> Changing Into %s %-8s" "$PROJECT_DIR"
     cd "$PROJECT_DIR"
     printf "[ ${green}OK${normal} ]\n"
 
-    printf "|-\-\-\-\-> Restarting Greentea %-35s"
+    printf "|-\-\-\-\-> Restarting Greentea %-25s"
     pkill -f "lein"
     lein run &> "$LOG_FILE" &
     printf "[ ${green}OK${normal} ]\n"
 
+    # Change back into previous directory
     cd - &> /dev/null
 
-    printf "|-\-\-\-\-> restarting apache %-37s"
-    sudo service apache2 restart &> /dev/null
+    printf "|-\-\-\-\-> Restarting Apache %-27s"
+    service apache2 restart &> /dev/null
     printf "[ ${green}OK${normal} ]\n"
 
-    printf "|-\-\-\-\-> Done! %-49s"
+    printf "|-\-\-\-\-> Done! %-39s"
     printf "[ ${green}OK${normal} ]\n"
 
     if [ "$(pgrep -f "lein")" ]
     then
-        echo -e "\n`echo "Greentea" | figlet -f invita` Infused and Ready\n"
+        echo -e "$LOGO Infused and Ready\n"
     else
-        figlet -f "$FONT" "Something went wrong :(" | cowsay -n -e "XX" -T "U"
+        echo -e "[${red}Something went wrong${normal} :("
     fi
 }
 
@@ -66,7 +72,7 @@ function GreenteaKiller {
     if [ "$(pgrep -f lein)" ]
     then
         printf "|-\-\-\-\-> Killing Greentea %-45s"
-        pkill -f "lein"
+        sudo pkill -f "lein"
         if [ "$(pgrep -f lein)" ]
         then
             printf "[ ${green}OK${normal} ]\n"
@@ -74,17 +80,20 @@ function GreenteaKiller {
             printf "[ ${red}FAILED${normal} ]\n"
         fi
     else
-        echo -e "$STR" `echo "[${underline}NOT Running${normal}] "` "\n" | cowsay -n -e "><"
+        echo -e "$STR" `echo -e "[ ${red}NOT Running${normal} ]"`
     fi
 }
 
 function GreenteaStatus {
-    STR="\n`figlet -f "$FONT" "Greentea is:"`\n\n\t\t\t\t\t"
+    TABS="\t\t\t\t\t"
+    STR="$LOGO\n\n$TABS"
+    CODE="`curl -sL -w "%{http_code}" "$URL" -o /dev/null`"
+    STR2="\n$TABS Code: $CODE\n"
     if [ "$(pgrep -f lein)" ]
     then
-        echo -e "$STR" `echo -e "[${red}Running${normal}] "` "\n" | cowsay -n -e "^^" -T "U"
+        echo -e "$STR" `echo -e "[ ${green}Running${normal} ] "` "$STR2"
     else
-        echo -e "$STR" `echo "[${underline}NOT Running${normal}] "` "\n" | cowsay -n -e "><"
+        echo -e "$STR" `echo -e "[ ${red}NOT Running${normal} ]"` "$STR2"
     fi
 }
 
@@ -104,7 +113,7 @@ function Processes {
     echo -e "$AVAILABLE_PROCESSES"
 }
 
-function TeabagApache {
+function ServiceApache {
     sudo service apache2 restart
 }
 
@@ -121,13 +130,13 @@ function Help {
         then
             echo "usage: teabag help <command>"
             printf "\t> Provides a terse description about passable commands.\n"
-        elif [ ${ARGS[1]} == "kill" ]
+        elif [ ${ARGS[1]} == "kill"  || ${ARGS[1]} == "stop" ]
         then
             echo "usage: teabag kill"
             printf "\t> Kills all currently running processes.\n"
             echo "usage: teabag kill <process>"
             printf "\t> Kills the specified running processes.\n"
-        elif [ ${ARGS[1]} == "infuse" ]
+        elif [ ${ARGS[1]} == "infuse" || ${ARGS[1]} == "start" ]
         then
             echo "usage: teabag"
             echo "usage: teabag infuse"
@@ -160,7 +169,7 @@ function Help {
 NUM_ARGS=("$#")
 ARGS=("$@")
 # TODO: Turn into arrays and parse them out within their appropriate functions
-AVAILABLE_COMMANDS="\tstatus\n \tapache\n \tkill\n \tusage\n \tinfuse\n \tprocesses\n \thelp"
+AVAILABLE_COMMANDS="\tstatus\n \tapache\n \tkill\n \tusage\n \tinfuse\n \tprocesses\n \thelp\n start\n \tstop\n"
 AVAILABLE_PROCESSES="\tgreentea"
 
 ##################################
@@ -172,13 +181,13 @@ then
     if [ "$1" == "status" ]
     then
         GreenteaStatus
-    elif [ "$1" == "kill" ]
+    elif [ "$1" == "kill" ] || [ "$1" == "stop" ]
     then
         GreenteaKiller
-    elif [ "$1" == "infuse" ]
+    elif [ "$1" == "infuse" ] || [ "$1" == "start" ]
     then
         GreenteaRunner
-    elif [ "$1" == "help" ]
+    elif [ "$1" == "help" ] || [ "$1" == "-h" ]
     then
         Help
     elif [ "$1" == "processes" ]
@@ -189,7 +198,7 @@ then
         Commands
     elif [ "$1" == "apache" ]
     then
-        TeabagApache
+        ServiceApache
     else
         Usage
     fi
