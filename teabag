@@ -32,7 +32,7 @@ PROJECT_DIR='/opt/apache2/Greentea/'
 LOG_FILE='/opt/apache2/Greentea/logs/error.log'
 URL='geco.iplantc.org/analytics'
 FONT='invita'
-LOGO="${green}\n`echo "Greentea" | figlet -f invita`${normal}"
+LOGO="${green}\n`echo "Greentea" | figlet -f $FONT`${normal}"
 
 ##################################
 #      Function Definitions      #
@@ -40,31 +40,35 @@ LOGO="${green}\n`echo "Greentea" | figlet -f invita`${normal}"
 
 function GreenteaRunner {
 
-    # Change into leiningen directory
-    printf "|-\-\-\-\-> Changing Into %s %-8s" "$PROJECT_DIR"
-    cd "$PROJECT_DIR"
-    printf "[ ${green}OK${normal} ]\n"
-
-    printf "|-\-\-\-\-> Restarting Greentea %-25s"
-    pkill -f "lein"
-    lein run &> "$LOG_FILE" &
-    printf "[ ${green}OK${normal} ]\n"
-
-    # Change back into previous directory
-    cd - &> /dev/null
-
-    printf "|-\-\-\-\-> Restarting Apache %-27s"
-    service apache2 restart &> /dev/null
-    printf "[ ${green}OK${normal} ]\n"
-
-    printf "|-\-\-\-\-> Done! %-39s"
-    printf "[ ${green}OK${normal} ]\n"
-
-    if [ "$(pgrep -f "lein")" ]
+    if [ ! "$(pgrep -f 'lein/')" ]
     then
-        echo -e "$LOGO Infused and Ready\n"
+        # Change into leiningen directory
+        printf "|-\-\-\-\-> Changing Into %s %-8s" "$PROJECT_DIR"
+        cd "$PROJECT_DIR"
+        printf "[ ${green}OK${normal} ]\n"
+
+        printf "|-\-\-\-\-> Restarting Greentea %-25s"
+        lein run &> "$LOG_FILE" &
+        printf "[ ${green}OK${normal} ]\n"
+
+        # Change back into previous directory
+        cd - &> /dev/null
+
+        printf "|-\-\-\-\-> Restarting Apache %-27s"
+        service apache2 restart &> /dev/null
+        printf "[ ${green}OK${normal} ]\n"
+
+        printf "|-\-\-\-\-> Done! %-39s"
+        printf "[ ${green}OK${normal} ]\n"
+
+        if [ "$(pgrep -f "lein")" ]
+        then
+            echo -e "$LOGO Infused and Ready\n"
+        else
+            echo -e "[${red}Something went wrong${normal} :("
+        fi
     else
-        echo -e "[${red}Something went wrong${normal} :("
+        echo -e "$LOGO - Already Running\n"
     fi
 }
 
@@ -80,7 +84,7 @@ function GreenteaKiller {
             printf "[ ${red}FAILED${normal} ]\n"
         fi
     else
-        echo -e "$STR" `echo -e "[ ${red}NOT Running${normal} ]"`
+        echo -e "$STR" `echo -e "[ ${red}$LOGO NOT Running${normal} ]"`
     fi
 }
 
