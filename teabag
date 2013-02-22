@@ -64,9 +64,11 @@ function GreenteaRunner {
         # Change back into previous directory
         cd - &> /dev/null
 
-        printf "|-\-\-\-\-> Restarting Apache %-27s"
-        service apache2 restart &> /dev/null
-        printf "[ ${green}OK${normal} ]\n"
+        printf "|-\-\-\-\-> Restarting Apache %-05s"
+        ServiceApache
+        printf "%-15s [ ${green}OK${normal} ]\n"
+
+        sleep 1
 
         printf "|-\-\-\-\-> Done! %-39s"
         printf "[ ${green}OK${normal} ]\n"
@@ -77,6 +79,7 @@ function GreenteaRunner {
         else
             echo -e "[${red}Something went wrong${normal} :("
         fi
+
     else
         echo -e "$LOGO - Already Running\n"
     fi
@@ -113,6 +116,13 @@ function GreenteaStatus {
 
 function GreenteaRestart {
     GreenteaKiller
+    for ((; ;))
+    do
+        if [ ! "$(pgrep -f lein)" ]
+        then
+            break
+        fi
+    done
     GreenteaRunner
 }
 
@@ -133,7 +143,12 @@ function Processes {
 }
 
 function ServiceApache {
-    sudo service apache2 restart
+    for i in {3..1}
+    do
+        printf "$i "
+        sleep 1
+    done
+    sudo service apache2 restart &> /dev/null
 }
 
 function Help {
