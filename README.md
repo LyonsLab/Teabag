@@ -3,11 +3,35 @@ Teabag - CoGe's Utility Belt
 
 Teabag is a bash script that manages CoGe services abstracting away the need for multiple, messy CLI calls.
 
+## Dependencies ##
+
+Teabag has a few dependencies for operation and formatting that might not come
+default on most unix systems. They are:
+
+* pgrep - a process grep program
+* pkill - a process killer program
+
 ## Installation ##
 Teabag comes pre-installed on the coge dev server, but if you don't have access to this fine machine never fear:
 
 1. `mv <the teabag script> /usr/local/bin/teabag`
 2. `sudo chmod 755 teabag`
+
+## Configuration ##
+
+Configuring Teabag to work on your system is as simple as changing some config
+variables in the script.
+
+Open the teabag script in your favorite text editor and change these
+configuration settings located at the top of the file:
+
+    ##################################
+    #     Configuration Settings     #
+    ##################################
+    GREENTEA_DIR='&lt;Greentea's Root Path&gt;'
+    GREENTEA_LOG_FILE='$GREENTEA_DIR/logs/error.log'
+    URL='geco.iplantc.org/analytics'
+    FONT='invita'
 
 ## Usage ##
 
